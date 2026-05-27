@@ -33,6 +33,15 @@ fn handle_connection(mut stream: TcpStream) -> std::io::Result<()>{
                                             })
                                             .collect::<Result<Vec<_>, _> >()?;
 
-    println!("request: {http_request:#?}");
+    println!("request: {http_request:#?}");   
+
+    //structure the response according the HTTP response structure 
+    let body = "Hello there big boss!";
+    let response = format!("HTTP/1.1 200 OK\r\n\
+                                    Content-Length: {}\r\n\
+                                    \r\n\
+                                    {}", body.len(), body);
+
+    stream.write_all(response.as_bytes())?;
     Ok(())
 }
