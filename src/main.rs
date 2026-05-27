@@ -1,4 +1,7 @@
-use std::net::TcpListener;
+use std::{
+    net::{TcpListener, TcpStream},
+    io::{BufReader, prelude::*}
+};
 
 fn main() -> std::io::Result<()>{
     //tcp listener (idiomatic style)
@@ -6,17 +9,30 @@ fn main() -> std::io::Result<()>{
 
     for stream in listener.incoming(){
         match stream {
-            Ok(_stream) => {
-                println!("connection established!");
+            Ok(stream) => {
+                let _ = handle_connection(stream);
             },
             Err(err) => {
                 eprintln!("could not establish connection. Reason: {}", err);
                 continue;
             }
         };
-
-        println!("connection established!");
     }
 
+    Ok(())
+}
+
+//handler function to handle connection
+fn handle_connection(mut stream: TcpStream) -> std::io::Result<()>{
+    let buf_reader = BufReader::new(&stream);
+
+    //idomatic way
+    let http_request = buf_reader.lines()
+                                            .take_while(|line| {
+                                                matches!(line, Ok(l) if !l.is_empty())
+                                            })
+                                            .collect::<Result<Vec<_>, _> >()?;
+
+    println!("request: {http_request:#?}");
     Ok(())
 }
